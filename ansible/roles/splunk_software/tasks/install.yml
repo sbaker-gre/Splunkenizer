@@ -116,25 +116,31 @@
     - splunk_install
   command: "{{ splunk_home }}/bin/splunk enable boot-start -user {{ splunk_user }} {{splunk_systemd_managed|default()}} {{splunk_unit_file_name|default()}}"
 
+- name: fix bug in splunk https://answers.splunk.com/answers/772476/systemd-broken-on-new-install.html
+  lineinfile:
+    path: /etc/systemd/system/splunk.service
+    regexp: '^ExecStartPost=/bin/bash -c "chown -R 1001:1001 /sys/fs/cgroup/cpu/'
+    line: ExecStartPost=/bin/bash -c "chown -R 1001:1001 /sys/fs/cgroup/cpu/system.slice/%n"
+
+- name: fix bug in splunk https://answers.splunk.com/answers/772476/systemd-broken-on-new-install.html
+  lineinfile:
+    path: /etc/systemd/system/splunk.service
+    regexp: '^ExecStartPost=/bin/bash -c "chown -R 1001:1001 /sys/fs/cgroup/memory/'
+    line: ExecStartPost=/bin/bash -c "chown -R 1001:1001 /sys/fs/cgroup/memory/system.slice/%n"
+
+# this is hacked right now for our use case, research and generalize
 - name: enable and start splunk service
-  tags:
-    - splunk
-    - splunk_software
-    - splunk_install
-  service:
-    name: "{{ splunk_service_name }}"
-    state: started
-    enabled: yes
-  when: use_systemctl == true
-
-- name: commit changes to systemctl
-  tags:
-    - splunk
-    - splunk_software
-    - splunk_install
-  command: systemctl daemon-reload
-  when: use_systemctl == true
-
+   tags:
+     - splunk
+     - splunk_software
+     - splunk_install
+   systemd:
+     name: "{{ splunk_service_name }}"
+     state: started
+     enabled: yes
+     daemon_reload:yes
+   when: use_systemctl == true
+ 
 - name: call check_systemd_file from splunk_common
   tags:
     - splunk
