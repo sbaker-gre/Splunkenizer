@@ -130,16 +130,16 @@
 
 # this is hacked right now for our use case, research and generalize
 - name: enable and start splunk service
-   tags:
-     - splunk
-     - splunk_software
-     - splunk_install
-   systemd:
-     name: "{{ splunk_service_name }}"
-     state: started
-     enabled: yes
-     daemon_reload:yes
-   when: use_systemctl == true
+  tags:
+    - splunk
+    - splunk_software
+    - splunk_install
+  systemd:
+    name: "{{ splunk_service_name }}"
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  when: use_systemctl == true
  
 - name: call check_systemd_file from splunk_common
   tags:
